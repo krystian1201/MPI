@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPISimpleTransferRing", "MP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPIRingAllPersonal2", "MPIRingAllPersonal2\MPIRingAllPersonal2.vcxproj", "{FB3BC45F-B83C-4324-8B31-91C7BAB8BC72}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPIMatrixVectorMultiplication", "MPIMatrixVectorMultiplication\MPIMatrixVectorMultiplication.vcxproj", "{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -69,6 +71,18 @@ Global
 		{FB3BC45F-B83C-4324-8B31-91C7BAB8BC72}.Release|Win32.Build.0 = Release|Win32
 		{FB3BC45F-B83C-4324-8B31-91C7BAB8BC72}.Release|x64.ActiveCfg = Release|x64
 		{FB3BC45F-B83C-4324-8B31-91C7BAB8BC72}.Release|x64.Build.0 = Release|x64
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|Win32.Build.0 = Debug|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|x64.ActiveCfg = Debug|x64
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Debug|x64.Build.0 = Debug|x64
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|Win32.ActiveCfg = Release|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|Win32.Build.0 = Release|Win32
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|x64.ActiveCfg = Release|x64
+		{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
