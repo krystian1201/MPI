@@ -8,7 +8,8 @@
 #include "FinalMessage.h"
 
 
-const int NUMBER_OF_NODES = 4;
+const int NUMBER_OF_NODES = 5;
+
 
 int MyMPIInit(int argc, char **argv);
 void startAllToAllCommunication(int currentProcessRank, bool isDebugMode);
@@ -24,7 +25,6 @@ int calculateOriginalSourceProcessRank(int currentProcessRank, int step);
 void printArray(int array[], int count, const char* title);
 void printMessagesAtDestinations(FinalMessage messagesAtDestination[NUMBER_OF_NODES - 1]);
 int mod(int a, int b);
-
 
 
 

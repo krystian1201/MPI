@@ -11,7 +11,7 @@ const int NUMBER_OF_NODES = N;
 
 int MyMPIInit(int argc, char **argv);
 void multiplicationSerial(const int matrix[N][N], const int inputVector[N]);
-void multiplicationParallel(int currentProcessRank, const int matrix[N][N], const int inputVector[N]);
+void multiplicationParallel(int currentProcessRank, const int matrixRow[N], const int inputVector[N]);
 int calculateOutputVectorElement(const int matrixRow[N], const int inputVector[N]);
 void printVector(const int vector[N], const char* title);
 //void cleanVector(int vector[]);
@@ -39,8 +39,10 @@ int main(int argc, char **argv)
 		multiplicationSerial(matrix, inputVector);
 	}*/
 	
+	int matrixRow[N];
+	memcpy(matrixRow, matrix[currentProcessRank], N * sizeof(int));
 
-	multiplicationParallel(currentProcessRank, matrix, inputVector);
+	multiplicationParallel(currentProcessRank, matrixRow, inputVector);
 
 	printf("----------------------------------------------------------------------------\n");
 
@@ -82,10 +84,9 @@ void multiplicationSerial(const int matrix[N][N], const int inputVector[N])
 }
 
 
-void multiplicationParallel(int currentProcessRank, const int matrix[N][N], const int inputVector[N])
+void multiplicationParallel(int currentProcessRank, const int matrixRow[N], const int inputVector[N])
 {
-	int matrixRow[N];
-	memcpy(matrixRow, matrix[currentProcessRank], N * sizeof(int));
+	
 	//printVector(matrixRow, "Matrix - Row");
 
 
