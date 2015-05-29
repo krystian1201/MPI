@@ -19,7 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MPIInfo.cpp" />
     <ClCompile Include="MPIMatrixVectorMultiplication.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MPIInfo.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{03CF10A4-B5EB-4BA6-8C5E-70D65E272102}</ProjectGuid>

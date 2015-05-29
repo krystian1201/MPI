@@ -7,8 +7,7 @@
 #include <mpi.h>
 #include "MPIInfo.h"
 
-//const int ARRAY_SIZE = 16777216;
-const int ARRAY_SIZE = 40000;
+const int ARRAY_SIZE = 20;
 
 
 MPIInfo MyMPIInit(int argc, char **argv);
@@ -61,18 +60,6 @@ int main(int argc, char **argv)
 }
 
 
-void GenerateRandomArray(int array[ARRAY_SIZE], int minElement, int range)
-{
-	srand((unsigned)time(0));
-
-	//printf("rand max: %d\n", RAND_MAX);
-
-	for (int i = 0; i < ARRAY_SIZE; i++)
-	{
-		array[i] = rand() % range + minElement;
-	}
-}
-
 MPIInfo MyMPIInit(int argc, char **argv)
 {
 	MPI_Init(&argc, &argv);
@@ -86,6 +73,19 @@ MPIInfo MyMPIInit(int argc, char **argv)
 	MPIInfo mpiInfo = MPIInfo(currentProcessRank, world_size);
 
 	return mpiInfo;
+}
+
+
+void GenerateRandomArray(int array[ARRAY_SIZE], int minElement, int range)
+{
+	srand((unsigned)time(0));
+
+	//printf("rand max: %d\n", RAND_MAX);
+
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		array[i] = rand() % range + minElement;
+	}
 }
 
 
@@ -103,10 +103,15 @@ void RankSortSequential(const int unsortedArray[ARRAY_SIZE], int sortedArray[ARR
 void RankSortParallel(const int unsortedArray[ARRAY_SIZE], int sortedArray[ARRAY_SIZE], 
 	int currentProcessRank, int numberOfNodes)
 {
+	int remainder = ARRAY_SIZE % numberOfNodes;
+
+	if (remainder != 0)
+	{
+		printf("Array size: %d is not divisible by the number of nodes: %d\n", ARRAY_SIZE, numberOfNodes);
+		return;
+	}
+
 	int elementsPerNode = (int)(ARRAY_SIZE / numberOfNodes);
-
-	//printf("elements per node: %d", elementsPerNode);
-
 
 	int startIndex = currentProcessRank * elementsPerNode;
 

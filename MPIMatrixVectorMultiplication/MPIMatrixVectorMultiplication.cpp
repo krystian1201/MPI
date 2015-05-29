@@ -1,48 +1,70 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <cstdlib>
+#include <ctime> 
 
 #include <mpi.h>
+#include "MPIInfo.h"
+
+const int MAT_ARR_SIZE = 500;
 
 
-const int N = 4;
-const int NUMBER_OF_NODES = N;
-
-
-int MyMPIInit(int argc, char **argv);
-void multiplicationSerial(const int matrix[N][N], const int inputVector[N]);
-void multiplicationParallel(int currentProcessRank, const int matrixRow[N], const int inputVector[N]);
-int calculateOutputVectorElement(const int matrixRow[N], const int inputVector[N]);
-void printVector(const int vector[N], const char* title);
-//void cleanVector(int vector[]);
+MPIInfo MyMPIInit(int argc, char **argv);
+void MultiplicationSerial(const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], const int inputVector[MAT_ARR_SIZE]);
+void MultiplicationParallel(int currentProcessRank, const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE],
+	const int inputVector[MAT_ARR_SIZE], int numberOfNodes);
+int CalculateOutputVectorElement(const int matrixRow[MAT_ARR_SIZE], const int inputVector[MAT_ARR_SIZE]);
+void PopulateTestInputVector(int inputVector[MAT_ARR_SIZE]);
+void PopulateTestMatrix(int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE]);
+void GenerateRandomArray(int array[MAT_ARR_SIZE], int minElement, int range);
+void GenerateRandomMatrix(int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], int minElement, int range);
+void PrintVector(const int vector[MAT_ARR_SIZE], const char* title);
+void PrintMatrix(const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], const char* title);
 
 
 int main(int argc, char **argv)
 {
 
-	int currentProcessRank = MyMPIInit(argc, argv);
+	MPIInfo mpiInfo = MyMPIInit(argc, argv);
+	int currentProcessRank = mpiInfo.getCurrentProcessRank();
+	int numberOfNodes = mpiInfo.getWorldSize();
+
 	printf("myrank = %d\n\n", currentProcessRank);
 
+	int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE];
+	int inputVector[MAT_ARR_SIZE];
 
-	const int matrix[N][N] =
-	{
-		{ 3, 4, 1, 2 },
-		{ 0, 1, 3, 4 },
-		{ 2, 1, 3, 1 },
-		{ 3, 0, 1, 2 }
-	};
-
-	const int inputVector[N] = { 4, 1, 3, 2 };
 	
-	/*if (currentProcessRank == 0)
-	{
-		multiplicationSerial(matrix, inputVector);
-	}*/
-	
-	int matrixRow[N];
-	memcpy(matrixRow, matrix[currentProcessRank], N * sizeof(int));
+	//int matrixRow[MAT_ARR_SIZE];
+	//memcpy(matrixRow, matrix[currentProcessRank], MAT_ARR_SIZE * sizeof(int));
 
-	multiplicationParallel(currentProcessRank, matrixRow, inputVector);
+
+	/*PopulateTestMatrix(matrix);
+	PopulateTestInputVector(inputVector);*/
+	
+	const int minRandomNumber = 0;
+	const int range = 10;
+	GenerateRandomArray(inputVector, minRandomNumber, range);
+	GenerateRandomMatrix(matrix, minRandomNumber, range);
+
+	//PrintVector(inputVector, "Random input vector:");
+	//PrintMatrix(matrix, "Random matrix:");
+
+
+	clock_t clockBegin = clock();
+
+		if (currentProcessRank == 0)
+		{
+			MultiplicationSerial(matrix, inputVector);
+		}
+
+		//MultiplicationParallel(currentProcessRank, matrix, inputVector, numberOfNodes);
+
+	clock_t clockEnd = clock();
+	double elapsedTime = double(clockEnd - clockBegin) / CLOCKS_PER_SEC;
+
+	printf("time: %f\n", elapsedTime);
 
 	printf("----------------------------------------------------------------------------\n");
 
@@ -52,7 +74,7 @@ int main(int argc, char **argv)
 }
 
 
-int MyMPIInit(int argc, char **argv)
+MPIInfo MyMPIInit(int argc, char **argv)
 {
 	MPI_Init(&argc, &argv);
 
@@ -62,58 +84,94 @@ int MyMPIInit(int argc, char **argv)
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-	return currentProcessRank;
+	MPIInfo mpiInfo = MPIInfo(currentProcessRank, world_size);
+
+	return mpiInfo;
 }
 
 
-void multiplicationSerial(const int matrix[N][N], const int inputVector[N])
+void MultiplicationSerial(const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], const int inputVector[MAT_ARR_SIZE])
 {
-	int outputVector[N];
+	int outputVector[MAT_ARR_SIZE];
 
-	for (int i = 0; i < N; i++)
+	for (int row = 0; row < MAT_ARR_SIZE; row++)
 	{
-		outputVector[i] = 0;
+		outputVector[row] = 0;
 
-		for (int j = 0; j < N; j++)
+		for (int col = 0; col < MAT_ARR_SIZE; col++)
 		{
-			outputVector[i] += matrix[i][j] * inputVector[j];
+			outputVector[row] += matrix[row][col] * inputVector[col];
 		}
 	}
 
-	printVector(outputVector, "Output vector - serial algorithm");
+	//PrintVector(outputVector, "Output vector - serial algorithm");
 }
 
 
-void multiplicationParallel(int currentProcessRank, const int matrixRow[N], const int inputVector[N])
+void MultiplicationParallel(int currentProcessRank, const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], 
+	const int inputVector[MAT_ARR_SIZE], int numberOfNodes)
 {
+	int remainder = MAT_ARR_SIZE % numberOfNodes;
+
+	if (remainder != 0)
+	{
+		printf("Matrix - Array size: %d is not divisible by the number of nodes: %d\n", MAT_ARR_SIZE, numberOfNodes);
+		return;
+	}
 	
-	//printVector(matrixRow, "Matrix - Row");
+	//PrintVector(matrixRow, "Matrix - Row");
+
+	int elementsPerNode = (int)(MAT_ARR_SIZE / numberOfNodes);
+
+	int startNode = currentProcessRank * elementsPerNode;
+
+	//printf("elems per node: %d\n", elementsPerNode);
+	//printf("start node: %d\n", startNode);
 
 
-	//int inputVectorForNode[N];
+	int inputVectorForNode[MAT_ARR_SIZE];
 
-	////this is the element of the input vector that is initially deployed at the current node
-	//inputVectorForNode[currentProcessRank] = inputVector[currentProcessRank];
+	for (int node = startNode; node < startNode + elementsPerNode; node++)
+	{
+		//printf("node: %d\n", node);
 
-	////all-to-all broadcast of the initial input vector element at each node
-	//for (int i = 0; i < N; i++)
-	//{
-	//	MPI_Bcast(&inputVectorForNode[i], 1, MPI_INT, i, MPI_COMM_WORLD);
-	//}
+		//this is the element of the input vector that is initially deployed at the current node
+		inputVectorForNode[node] = inputVector[node];
+	}
 
-	//printVector(inputVectorForNode, "Input vector - from broadcast");
+	//all-to-all broadcast of the initial input vector
+	//number of elements each node sends depends on the number of nodes
+	//for example for matrix size 8 and 4 nodes each node sends 2 elements
+	//node receives input vector elements from all other nodes
+	//and sends its input vector element to all other nodes
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		int broadcastRoot = int(i / elementsPerNode);
+
+		//printf("input elem: %d broadcastRoot: %d\n", i, broadcastRoot);
+
+		MPI_Bcast(&inputVectorForNode[i], 1, MPI_INT, broadcastRoot, MPI_COMM_WORLD);
+	}
 
 
-	int outputVectorElement = calculateOutputVectorElement(matrixRow, inputVector);
-	printf("output[%d] : %d\n", currentProcessRank, outputVectorElement);
+	//PrintVector(inputVectorForNode, "Input vector - from broadcast");
+
+
+	for (int node = startNode; node < startNode + elementsPerNode; node++)
+	{
+		int outputVectorElement = CalculateOutputVectorElement(matrix[node], inputVectorForNode);
+
+		//printf("output[%d] : %d\n", node, outputVectorElement);
+	}
+
 }
 
 
-int calculateOutputVectorElement(const int matrixRow[N], const int inputVector[N])
+int CalculateOutputVectorElement(const int matrixRow[MAT_ARR_SIZE], const int inputVector[MAT_ARR_SIZE])
 {
 	int outputVectorElement = 0;
 
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
 	{
 		outputVectorElement += matrixRow[i] * inputVector[i];
 	}
@@ -121,35 +179,104 @@ int calculateOutputVectorElement(const int matrixRow[N], const int inputVector[N
 	return outputVectorElement;
 }
 
+void PopulateTestInputVector(int inputVector[MAT_ARR_SIZE])
+{
+	//const int inputVector[MAT_ARR_SIZE] = { 4, 1, 3, 2 };
+	int inputVectorIntialized[MAT_ARR_SIZE] = { 8, 7, 7, 2, 6, 8, 5, 4 };
 
-void printVector(const int vector[N], const char* title)
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		inputVector[i] = inputVectorIntialized[i];
+	}
+}
+
+
+void PopulateTestMatrix(int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE])
+{
+	/*const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE] =
+	{
+	{ 3, 4, 1, 2 },
+	{ 0, 1, 3, 4 },
+	{ 2, 1, 3, 1 },
+	{ 3, 0, 1, 2 }
+	};*/
+
+	const int matrixInitialized[MAT_ARR_SIZE][MAT_ARR_SIZE] =
+	{
+		{ 0, 9, 2, 5, 6, 2, 5, 2 },
+		{ 0, 2, 3, 1, 9, 4, 7, 7 },
+		{ 9, 0, 4, 2, 7, 8, 0, 4 },
+		{ 3, 7, 2, 1, 1, 7, 8, 4 },
+		{ 5, 2, 2, 3, 0, 3, 0, 0 },
+		{ 4, 3, 7, 0, 0, 6, 8, 8 },
+		{ 3, 9, 2, 6, 7, 9, 6, 7 },
+		{ 3, 3, 7, 9, 6, 8, 6, 6 }
+	};
+
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		for (int j = 0; j < MAT_ARR_SIZE; j++)
+		{
+			matrix[i][j] = matrixInitialized[i][j];
+		}
+	}
+}
+
+void GenerateRandomArray(int array[MAT_ARR_SIZE], int minElement, int range)
+{
+	srand((unsigned)time(0));
+
+	//printf("rand max: %d\n", RAND_MAX);
+
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		array[i] = rand() % range + minElement;
+	}
+}
+
+
+void GenerateRandomMatrix(int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], int minElement, int range)
+{
+	srand((unsigned)time(0));
+
+	//printf("rand max: %d\n", RAND_MAX);
+
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		for (int j = 0; j < MAT_ARR_SIZE; j++)
+		{
+			matrix[i][j] = rand() % range + minElement;
+		}
+
+		//GenerateRandomArray(matrix[i], minElement, range);
+	}
+}
+
+
+void PrintVector(const int vector[MAT_ARR_SIZE], const char* title)
 {
 	printf(title);
 	printf("\n");
 
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
 	{
-		printf("%d\n", vector[i]);
+		printf("%d\t", vector[i]);
 	}
 
-	printf("\n");
+	printf("\n\n");
 }
 
 
-//void cleanVector(int vector[])
-//{
-//	;
-//	for (int i = 0; i < N; i++)
-//	{
-//		vector[i] = -1;
-//	}
-//}
+void PrintMatrix(const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], const char* title)
+{
+	printf(title);
+	printf("\n");
 
-//const int matrix[N][N] =
-//{
-//	{ 3, 1, 2 },
-//	{ 4, 0, 1 },
-//	{ 2, 1, 3 }
-//};
-//
-//const int inputVector[N] = { 3, 1, 2 };
+	for (int i = 0; i < MAT_ARR_SIZE; i++)
+	{
+		PrintVector(matrix[i], "");
+		printf("\n");
+	}
+
+	printf("\n\n");
+}
