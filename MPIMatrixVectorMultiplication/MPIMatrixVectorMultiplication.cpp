@@ -7,7 +7,7 @@
 #include <mpi.h>
 #include "MPIInfo.h"
 
-const int MAT_ARR_SIZE = 500;
+const int MAT_ARR_SIZE = 10000;
 
 
 MPIInfo MyMPIInit(int argc, char **argv);
@@ -23,6 +23,10 @@ void PrintVector(const int vector[MAT_ARR_SIZE], const char* title);
 void PrintMatrix(const int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE], const char* title);
 
 
+int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE];
+int inputVector[MAT_ARR_SIZE];
+
+
 int main(int argc, char **argv)
 {
 
@@ -32,21 +36,17 @@ int main(int argc, char **argv)
 
 	printf("myrank = %d\n\n", currentProcessRank);
 
-	int matrix[MAT_ARR_SIZE][MAT_ARR_SIZE];
-	int inputVector[MAT_ARR_SIZE];
-
-	
-	//int matrixRow[MAT_ARR_SIZE];
-	//memcpy(matrixRow, matrix[currentProcessRank], MAT_ARR_SIZE * sizeof(int));
-
 
 	/*PopulateTestMatrix(matrix);
 	PopulateTestInputVector(inputVector);*/
 	
+	
 	const int minRandomNumber = 0;
-	const int range = 10;
+	const int range = 100;
 	GenerateRandomArray(inputVector, minRandomNumber, range);
 	GenerateRandomMatrix(matrix, minRandomNumber, range);
+	
+	//MPI_Barrier(MPI_COMM_WORLD);
 
 	//PrintVector(inputVector, "Random input vector:");
 	//PrintMatrix(matrix, "Random matrix:");
@@ -54,12 +54,12 @@ int main(int argc, char **argv)
 
 	clock_t clockBegin = clock();
 
-		if (currentProcessRank == 0)
+		/*if (currentProcessRank == 0)
 		{
 			MultiplicationSerial(matrix, inputVector);
-		}
+		}*/
 
-		//MultiplicationParallel(currentProcessRank, matrix, inputVector, numberOfNodes);
+		MultiplicationParallel(currentProcessRank, matrix, inputVector, numberOfNodes);
 
 	clock_t clockEnd = clock();
 	double elapsedTime = double(clockEnd - clockBegin) / CLOCKS_PER_SEC;
