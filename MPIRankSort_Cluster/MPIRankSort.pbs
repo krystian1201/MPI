@@ -1,0 +1,4 @@
+#PBS -l nodes=2:ppn=1
+#PBS -N MPI_Rank_Sort_output
+#PBS -j oe
+mpiexec ~/project/MPIRankSort

@@ -15,6 +15,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPIMatrixVectorMultiplicati
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPIRankSort", "MPIRankSort\MPIRankSort.vcxproj", "{AE0E1866-4312-42C7-9D45-E195E5796360}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MPIRankSort_Cluster", "MPIRankSort_Cluster", "{14B05C25-7900-4B7F-A404-8921A541AC2C}"
+	ProjectSection(SolutionItems) = preProject
+		MPIRankSort_Cluster\MPIInfo.cpp = MPIRankSort_Cluster\MPIInfo.cpp
+		MPIRankSort_Cluster\MPIInfo.h = MPIRankSort_Cluster\MPIInfo.h
+		MPIRankSort_Cluster\MPIRankSort = MPIRankSort_Cluster\MPIRankSort
+		MPIRankSort_Cluster\MPIRankSort.cpp = MPIRankSort_Cluster\MPIRankSort.cpp
+		MPIRankSort_Cluster\MPIRankSort.pbs = MPIRankSort_Cluster\MPIRankSort.pbs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
